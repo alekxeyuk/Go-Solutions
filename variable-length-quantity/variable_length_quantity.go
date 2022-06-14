@@ -5,38 +5,27 @@ import (
 )
 
 const (
-	maxBits        = 8
-	eightBit uint8 = 128
+	chunkSize uint8 = 7
+	eightBit  uint8 = 128
 )
 
 func EncodeVarint(input []uint32) []byte {
 	var out []byte
 	for _, value := range input {
-		var numBytes []byte
-		tmp := uint8(0)
-		power := uint8(1)
-		morethanone := false
-		for i := 1; ; value >>= 1 {
-			if i == maxBits || value == 0 {
-				if morethanone {
+		if value == 0 {
+			out = append(out, 0x0)
+		} else {
+			var numBytes []byte
+			for i := 0; value > 0; value >>= chunkSize {
+				tmp := byte(value & 127)
+				if i > 0 {
 					tmp ^= eightBit
-				} else {
-					morethanone = !morethanone
 				}
 				numBytes = append([]byte{tmp}, numBytes...)
-				tmp = 0
-				power = 1
-				i = 1
+				i++
 			}
-			if value == 0 {
-				break
-			} else if value&1 != 0 {
-				tmp ^= power
-			}
-			power *= 2
-			i++
+			out = append(out, numBytes...)
 		}
-		out = append(out, numBytes...)
 	}
 	return out
 }
@@ -52,7 +41,7 @@ func DecodeVarint(input []byte) ([]uint32, error) {
 			temp = 0
 		} else {
 			temp |= uint32(value ^ eightBit)
-			temp <<= 7
+			temp <<= chunkSize
 			complete = false
 		}
 	}
