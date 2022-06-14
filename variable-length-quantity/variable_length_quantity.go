@@ -2,31 +2,28 @@ package variablelengthquantity
 
 import (
 	"errors"
-	"fmt"
-	"strconv"
-	"strings"
 )
 
 const (
-	maxbytes         = 8
-	notthelast uint8 = 128
+	maxBits        = 8
+	eightBit uint8 = 128
 )
 
 func EncodeVarint(input []uint32) []byte {
-	out := []byte{}
+	var out []byte
 	for _, value := range input {
-		numbytes := []byte{}
+		var numBytes []byte
 		tmp := uint8(0)
 		power := uint8(1)
 		morethanone := false
 		for i := 1; ; value >>= 1 {
-			if i == maxbytes || value == 0 {
+			if i == maxBits || value == 0 {
 				if morethanone {
-					tmp ^= notthelast
+					tmp ^= eightBit
 				} else {
 					morethanone = !morethanone
 				}
-				numbytes = append([]byte{tmp}, numbytes...)
+				numBytes = append([]byte{tmp}, numBytes...)
 				tmp = 0
 				power = 1
 				i = 1
@@ -39,24 +36,23 @@ func EncodeVarint(input []uint32) []byte {
 			power *= 2
 			i++
 		}
-		out = append(out, numbytes...)
+		out = append(out, numBytes...)
 	}
 	return out
 }
 
 func DecodeVarint(input []byte) ([]uint32, error) {
-	var sb strings.Builder
-	out := []uint32{}
+	var out []uint32
+	temp := uint32(0)
 	complete := false
 	for _, value := range input {
-		tmp := fmt.Sprintf("%08b", value)
-		sb.WriteString(tmp[1:])
-		if tmp[0] == '0' {
-			p, _ := strconv.ParseUint(sb.String(), 2, 32)
-			out = append(out, uint32(p))
-			sb.Reset()
+		if value&eightBit == 0 {
+			out = append(out, temp|uint32(value))
 			complete = true
+			temp = 0
 		} else {
+			temp |= uint32(value ^ eightBit)
+			temp <<= 7
 			complete = false
 		}
 	}
