@@ -18,11 +18,10 @@ func EncodeVarint(input []uint32) []byte {
 			var numBytes []byte
 			for i := 0; value > 0; value >>= chunkSize {
 				tmp := byte(value & 127)
-				if i > 0 {
+				if i++; i > 1 {
 					tmp ^= eightBit
 				}
 				numBytes = append([]byte{tmp}, numBytes...)
-				i++
 			}
 			out = append(out, numBytes...)
 		}
