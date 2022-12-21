@@ -194,26 +194,20 @@ func Room3(extent Rect, robots []Step3Robot, action chan Action3, rep chan []Ste
 			wb := false
 			switch actRobot.Dir {
 			case N:
-				if wb = worldMap[Pos{p.Easting, p.Northing + 1}]; wb {
-					log <- "Robot bump"
-				}
+				wb = worldMap[Pos{p.Easting, p.Northing + 1}]
 			case E:
-				if wb = worldMap[Pos{p.Easting + 1, p.Northing}]; wb {
-					log <- "Robot bump"
-				}
+				wb = worldMap[Pos{p.Easting + 1, p.Northing}]
 			case S:
-				if wb = worldMap[Pos{p.Easting, p.Northing - 1}]; wb {
-					log <- "Robot bump"
-				}
+				wb = worldMap[Pos{p.Easting, p.Northing - 1}]
 			case W:
-				if wb = worldMap[Pos{p.Easting - 1, p.Northing}]; wb {
-					log <- "Robot bump"
-				}
+				wb = worldMap[Pos{p.Easting - 1, p.Northing}]
 			}
 			if !wb {
 				delete(worldMap, p)
 				actRobot.AdvanceWithLog(&extent, log)
 				worldMap[actRobot.Pos] = true
+			} else {
+				log <- "Robot bump"
 			}
 		case 'H':
 			actRobot.Ignored = true
